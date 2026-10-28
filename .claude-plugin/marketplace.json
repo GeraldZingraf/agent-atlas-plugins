@@ -1,0 +1,14 @@
+{
+  "name": "agent-atlas",
+  "description": "Claude plugins from Agent Atlas, an AI partner for owner-run businesses.",
+  "owner": {
+    "name": "Agent Atlas"
+  },
+  "plugins": [
+    {
+      "name": "agent-atlas",
+      "source": "./plugins/agent-atlas",
+      "description": "Map Your Month: see where your last 30 days went, from your own email and calendar, and what to take off your plate."
+    }
+  ]
+}

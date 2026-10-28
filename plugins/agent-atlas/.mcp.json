@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "agent-atlas": {
+      "type": "http",
+      "url": "https://agent-atlas-connector.netlify.app/mcp"
+    }
+  }
+}
