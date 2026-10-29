@@ -7,7 +7,7 @@ worth taking off your plate.
 ## Add it to Claude
 
 1. In Claude (claude.ai or the desktop app), go to **Customize > Plugins**.
-2. Choose **Add > Add marketplace** and paste:
+2. Choose **Add > Add marketplace**, then **Add from a repository**, and paste:
 
    ```
    GeraldZingraf/agent-atlas-plugins
