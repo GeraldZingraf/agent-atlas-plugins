@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Month, Mapped</title>
+<style>
+  :root {
+    --ink: #0B1016; --chart: #142030; --parch: #EFE6D2; --paper: #F6F1E6; --card: #FBF8F1;
+    --line: #DCD2BD; --brass: #E0A458; --brass-dk: #8A5A1F; --muted: #3A4654; --sea: #8FA9A4;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--ink); color: var(--chart); font-family: var(--sans); overflow: hidden; }
+  #viewport { position: fixed; inset: 0 0 56px 0; display: flex; align-items: center; justify-content: center; }
+  #stage { width: 1280px; height: 720px; position: relative; transform-origin: center center; }
+  .slide { position: absolute; inset: 0; display: none; flex-direction: column; gap: 22px;
+           padding: 52px 64px 44px; background: var(--paper); border-radius: 6px; overflow: hidden; }
+  .slide.on { display: flex; }
+  .slide.dark { background: var(--chart); color: var(--parch); }
+  .kicker { font-family: var(--mono); font-size: 14px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--brass-dk); }
+  .dark .kicker { color: var(--brass); }
+  h1, h2 { font-family: var(--serif); font-weight: 400; line-height: 1.08; }
+  h1 { font-size: 46px; } h2 { font-size: 38px; }
+  .body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 18px; }
+  .foot { font-size: 14px; color: var(--muted); display: flex; justify-content: space-between; gap: 24px; }
+  .dark .foot { color: var(--sea); }
+  .grid { display: grid; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px;
+          display: flex; flex-direction: column; gap: 8px; }
+  .card.top { border-top: 4px solid #B97F3A; }
+  .metric .v { font-family: var(--serif); font-size: 44px; line-height: 1; color: var(--chart); }
+  .metric .l { font-size: 16px; font-weight: 600; }
+  .metric .n { font-size: 14px; color: var(--muted); }
+  .callout { background: var(--chart); color: var(--parch); border-radius: 10px; padding: 18px 22px;
+             display: flex; gap: 20px; align-items: baseline; font-size: 18px; line-height: 1.4; }
+  .callout .tag { font-family: var(--mono); font-size: 13px; color: var(--brass); letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap; }
+  h3 { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.12; }
+  .lbl { font-family: var(--mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--brass-dk); }
+  .t { font-size: 17px; line-height: 1.4; color: var(--muted); }
+  .t.strong { color: var(--chart); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 17px; line-height: 1.38; }
+  th { text-align: left; font-family: var(--mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+       color: var(--brass); background: var(--chart); padding: 10px 12px; font-weight: 400; }
+  td { padding: 12px 14px; vertical-align: top; border-bottom: 1px solid var(--line); }
+  tr:nth-child(even) td { background: var(--card); }
+  td.num { white-space: nowrap; font-weight: 600; color: var(--chart); }
+  .big { font-family: var(--serif); font-size: 64px; line-height: 1; color: var(--chart); }
+  mark { background: #F3DDB3; color: var(--chart); padding: 0 3px; border-radius: 3px; font-size: .9em; }
+  .dark mark { background: #5A4320; color: var(--parch); }
+  pre { white-space: pre-wrap; font-family: var(--sans); font-size: 15px; line-height: 1.45; color: var(--chart);
+        background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; overflow: auto; flex: 1; min-height: 0; }
+  .steps { list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 14px; }
+  .steps li { counter-increment: s; display: flex; gap: 12px; font-size: 17px; line-height: 1.4; }
+  .dark .steps li { font-size: 22px; gap: 16px; }
+  .dark .callout { background: #1C2B3E; border: 1px solid #2E3E52; }
+  .dark .t { color: var(--sea); }
+  .steps li::before { content: counter(s); flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--chart);
+                      color: var(--brass); font-family: var(--mono); font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .dark .steps li::before { background: var(--brass); color: var(--chart); }
+  .btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brass); color: var(--ink); font-weight: 700;
+         font-size: 20px; padding: 16px 28px; border-radius: 999px; text-decoration: none; border: 0; cursor: pointer; font-family: var(--sans); }
+  .btn.small { font-size: 14px; padding: 9px 16px; }
+  .row { display: flex; gap: 28px; min-height: 0; }
+  #nav { position: fixed; left: 0; right: 0; bottom: 0; height: 56px; display: flex; align-items: center; justify-content: center;
+         gap: 14px; color: var(--sea); font: 14px var(--mono); }
+  #nav button { background: transparent; color: var(--parch); border: 1px solid #3A4654; border-radius: 999px;
+                padding: 7px 16px; font: 14px var(--sans); cursor: pointer; }
+  #nav button:disabled { opacity: .35; cursor: default; }
+  #dots { display: flex; gap: 6px; }
+  #dots span { width: 8px; height: 8px; border-radius: 50%; background: #3A4654; cursor: pointer; }
+  #dots span.on { background: var(--brass); }
+
+  /* Phones and narrow windows: one long scrolling page instead of slides. */
+  body.flow { overflow: auto; }
+  body.flow #viewport { position: static; display: block; padding: 12px; }
+  body.flow #stage { width: auto; height: auto; transform: none !important; display: flex; flex-direction: column; gap: 12px; }
+  body.flow .slide { position: relative; display: flex; padding: 28px 18px; }
+  body.flow .body { overflow: visible; }
+  body.flow .grid { grid-template-columns: 1fr !important; }
+  body.flow .row { flex-direction: column; }
+  body.flow h1 { font-size: 32px; } body.flow h2 { font-size: 28px; } body.flow .big { font-size: 48px; }
+  body.flow table, body.flow tbody, body.flow tr, body.flow td { display: block; width: 100%; }
+  body.flow thead { display: none; }
+  body.flow td { border: 0; padding: 4px 0; }
+  body.flow tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  body.flow #nav { display: none; }
+
+  @media print {
+    body { overflow: visible; background: #fff; }
+    #viewport { position: static; display: block; }
+    #stage { transform: none !important; width: 1280px; height: auto; }
+    .slide { position: relative; display: flex !important; height: 720px; page-break-after: always; break-after: page; }
+    #nav { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage"></div></div>
+<div id="nav">
+  <button id="prev">Back</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button id="next">Next</button>
+</div>
+<script>
+/* ===== Claude: replace ONLY this DECK object with the owner's data. Leave everything else as is. ===== */
+const DECK = {
+  business: "<business name>",
+  firstName: "<first name>",
+  period: "<Mon D – Mon D, YYYY>",
+  bottomLine: {
+    headline: "<one sentence, 25 words or fewer: the most important thing this month>",
+    metrics: [
+      { value: "<e.g. 24 h 45>", label: "<e.g. in meetings>", note: "<e.g. 13 h internal recurring>" }
+    ],
+    surprise: "<the biggest surprise: the chain, 2-3 sentences with its numbers>"
+  },
+  quickWins: [
+    { title: "<short name>", why: "<deadline, money, or who's waiting>", action: "<the one thing to do>", reply: "<label of a reply in replies, or empty>" }
+  ],
+  timeSaved: {
+    total: "<e.g. 13 h a month, or 'not measured yet'>",
+    totalNote: "<what the total adds up, e.g. 5 h + 3 h 40 + 2 h 30 + more not measured>",
+    rows: [
+      { area: "<the repeat>", now: "<what happens today, with how often>", change: "<what would change>", hours: "<h/month with math, or not measured>" }
+    ]
+  },
+  bottlenecks: {
+    stat: "<e.g. 15 requests needed your OK this month; 7 are still open>",
+    rows: [
+      { what: "<what only moves when you touch it>", evidence: "<who waited, how long, how much>", fix: "<who could own it, or what would unblock it>" }
+    ]
+  },
+  nextFive: [
+    { what: "<the thing>", saw: "<what the scan saw>", hours: "<h/month with math, or not measured>", money: "<stated $, or empty>", takes: "<what it would take>" }
+  ],
+  chiefOfStaff: "<the chief of staff instructions, under 300 words, line breaks with \\n>",
+  firstWin: "<one sentence: the first win Agent Atlas would build with them in the session>",
+  thisWeek: [
+    { due: "<day and date>", what: "<what>", who: "<who's waiting>", stake: "<stated $, or not stated>" }
+  ],
+  thisWeekTotal: "<e.g. Total stated at stake this week: $750 + $312 = $1,062. Also waiting on your yes: $14,850>",
+  replies: [
+    { label: "<e.g. Ray: heater>", text: "<the reply in their voice>" }
+  ],
+  suspicious: [
+    { what: "<sender and date, described>", why: "<why it's suspicious and what to do>" }
+  ]
+};
+/* ===== End of the part Claude fills in. ===== */
+
+const BOOKING_URL = "https://cal.com/gerald-zingraf-ugk9rh/map-your-month";
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) addText(e, String(text));
+  return e;
+}
+// Plain text only; [CHECK] markers are highlighted.
+function addText(node, s) {
+  s.split(/(\[CHECK[^\]]*\])/).forEach(part => {
+    if (!part) return;
+    if (/^\[CHECK/.test(part)) node.appendChild(el("mark", null)).textContent = part;
+    else node.appendChild(document.createTextNode(part));
+  });
+}
+function add(parent, ...kids) { kids.forEach(k => k && parent.appendChild(k)); return parent; }
+function list(a) { return Array.isArray(a) ? a.filter(Boolean) : []; }
+
+function slide(kicker, title, opts = {}) {
+  const s = el("section", "slide" + (opts.dark ? " dark" : ""));
+  s.dataset.title = opts.navTitle || title;
+  add(s, el("p", "kicker", kicker), el(opts.h1 ? "h1" : "h2", null, title));
+  const body = add(s, el("div", "body")).lastChild;
+  const foot = el("div", "foot");
+  add(foot, el("span", null, DECK.business + " · " + DECK.period), el("span", null, "Map Your Month · Agent Atlas"));
+  s.appendChild(foot);
+  return { s, body };
+}
+function table(heads, rows, numCols = []) {
+  const t = el("table");
+  const thead = add(t, el("thead")).lastChild, hr = add(thead, el("tr")).lastChild;
+  heads.forEach(h => hr.appendChild(el("th", null, h)));
+  const tb = add(t, el("tbody")).lastChild;
+  rows.forEach(r => {
+    const tr = add(tb, el("tr")).lastChild;
+    r.forEach((c, i) => tr.appendChild(el("td", numCols.includes(i) ? "num" : null, c || "")));
+  });
+  return t;
+}
+
+const slides = [];
+
+// 1. Bottom line up front
+{
+  const b = DECK.bottomLine || {};
+  const { s, body } = slide("Bottom line · your last 30 days", b.headline, { h1: true, navTitle: "Bottom line" });
+  const m = list(b.metrics).slice(0, 6);
+  const g = el("div", "grid"); g.style.gridTemplateColumns = `repeat(${m.length > 4 ? 3 : Math.max(m.length, 1)}, 1fr)`;
+  m.forEach(x => add(g, add(el("div", "card metric"), el("div", "v", x.value), el("div", "l", x.label), x.note ? el("div", "n", x.note) : null)));
+  add(body, g);
+  if (b.surprise) add(body, add(el("div", "callout"), el("span", "tag", "Biggest surprise"), el("span", null, b.surprise)));
+  slides.push(s);
+}
+
+// 2. Three quick wins
+{
+  const { s, body } = slide("Do these this week", "Three quick wins", {});
+  const g = el("div", "grid"); g.style.gridTemplateColumns = "repeat(3, 1fr)"; g.style.flex = "1";
+  list(DECK.quickWins).slice(0, 3).forEach((w, i) => {
+    const c = add(el("div", "card top"), el("p", "lbl", "Win " + (i + 1)), el("h3", null, w.title),
+      el("p", "lbl", "Why now"), el("p", "t", w.why), el("p", "lbl", "Do this"), el("p", "t strong", w.action));
+    if (w.reply) add(c, el("p", "t", "A reply you can send is in the appendix: " + w.reply + "."));
+    g.appendChild(c);
+  });
+  add(body, g);
+  slides.push(s);
+}
+
+// 3. Where we'll save you time
+{
+  const ts = DECK.timeSaved || {};
+  const { s, body } = slide("Where your time goes", "Where we can save you time", {});
+  add(body, add(el("div", "row"), add(el("div", null), el("div", "big", ts.total), el("p", "t", ts.totalNote))));
+  add(body, table(["The repeat", "Today", "What changes", "Hours a month"],
+    list(ts.rows).slice(0, 6).map(r => [r.area, r.now, r.change, r.hours]), [3]));
+  slides.push(s);
+}
+
+// 4. Bottlenecks
+{
+  const bn = DECK.bottlenecks || {};
+  const { s, body } = slide("Where things wait for you", "Your bottlenecks", {});
+  if (bn.stat) add(body, add(el("div", "callout"), el("span", "tag", "This month"), el("span", null, bn.stat)));
+  add(body, table(["Only moves when you touch it", "What it cost this month", "Who could own it"],
+    list(bn.rows).slice(0, 6).map(r => [r.what, r.evidence, r.fix])));
+  slides.push(s);
+}
+
+// 5. The next five
+{
+  const { s, body } = slide("Ranked by hours and money", "The next five things off your plate", {});
+  add(body, table(["#", "What", "What we saw", "Hours back", "Money at stake", "What it takes"],
+    list(DECK.nextFive).slice(0, 5).map((r, i) => [String(i + 1), r.what, r.saw, r.hours, r.money || "—", r.takes]), [0, 3]));
+  slides.push(s);
+}
+
+// 6. Chief of staff
+{
+  const { s, body } = slide("Start using this today", "Your chief of staff", {});
+  const row = el("div", "row"); row.style.flex = "1";
+  const left = el("div"); left.style.cssText = "width:380px;flex:none;display:flex;flex-direction:column;gap:16px";
+  const steps = el("ol", "steps");
+  ["In Claude, open Projects and create one called \"Chief of staff\".",
+   "Copy the instructions on the right into the project's instructions.",
+   "Start a chat in that project with your email and calendar connectors on.",
+   "Each morning, ask: \"What's waiting on me?\"",
+   "Fix anything marked CHECK the first time you use it."].forEach(t => steps.appendChild(el("li", null, t)));
+  const copy = el("button", "btn small", "Copy the instructions"); copy.style.alignSelf = "flex-start";
+  add(left, steps, copy);
+  const right = el("div"); right.style.cssText = "flex:1;display:flex;flex-direction:column;gap:10px;min-height:0";
+  const pre = el("pre", null, (DECK.chiefOfStaff || "").replace(/\\n/g, "\n"));
+  add(right, el("p", "lbl", "Paste into your project's instructions"), pre);
+  copy.onclick = async () => {
+    const text = pre.textContent;
+    try { await navigator.clipboard.writeText(text); copy.textContent = "Copied"; }
+    catch (e) {
+      const r = document.createRange(); r.selectNodeContents(pre);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      copy.textContent = "Selected: press Ctrl+C (or Cmd+C)";
+    }
+  };
+  add(body, add(row, left, right));
+  slides.push(s);
+}
+
+// 7. The results session
+{
+  const { s, body } = slide("Free · 30 minutes", "Let's build your first win together", { dark: true, h1: true, navTitle: "Book your session" });
+  const row = el("div", "row"); row.style.cssText = "align-items:center;flex:1;gap:48px";
+  const left = el("div"); left.style.cssText = "flex:1;display:flex;flex-direction:column;gap:28px";
+  const steps = el("ol", "steps");
+  ["We walk through this deck with you and answer what it raised.",
+   "We set up your chief of staff with you, live, so it's working before we hang up.",
+   "We pick what to take off your plate next, and what it's worth."].forEach(t => steps.appendChild(el("li", null, t)));
+  add(left, steps);
+  if (DECK.firstWin) add(left, add(el("div", "callout"), el("span", "tag", "We'll come ready with"), el("span", null, DECK.firstWin)));
+  const right = el("div"); right.style.cssText = "width:400px;flex:none;display:flex;flex-direction:column;gap:16px;align-items:flex-start";
+  const a = el("a", "btn", "Book your free 30 minutes"); a.href = BOOKING_URL; a.target = "_blank"; a.rel = "noopener";
+  add(right, a, el("p", "t", BOOKING_URL), el("p", "t",
+    "It helps to share your summary first, so we can plan your first win. Claude will show you exactly what it contains. No names, no email content."));
+  add(body, add(row, left, right));
+  slides.push(s);
+}
+
+// Appendix
+if (list(DECK.thisWeek).length) {
+  const { s, body } = slide("Appendix · due in the next 7 days", "This week", {});
+  add(body, table(["Due", "What", "Who's waiting", "Stated at stake"],
+    list(DECK.thisWeek).slice(0, 7).map(r => [r.due, r.what, r.who, r.stake]), [0]));
+  if (DECK.thisWeekTotal) add(body, el("p", "t strong", DECK.thisWeekTotal));
+  slides.push(s);
+}
+if (list(DECK.replies).length) {
+  const { s, body } = slide("Appendix · nothing is drafted in your mailbox", "Replies you could send today", {});
+  const g = el("div", "grid"); g.style.gridTemplateColumns = "repeat(2, 1fr)";
+  list(DECK.replies).slice(0, 5).forEach(r => add(g, add(el("div", "card"), el("p", "lbl", r.label), el("p", "t", r.text))));
+  add(body, g);
+  slides.push(s);
+}
+{
+  const { s, body } = slide("Appendix · check before you act", "Suspicious emails", {});
+  const items = list(DECK.suspicious);
+  if (!items.length) add(body, el("p", "t", "None found."));
+  else add(body, table(["What", "Why, and what to do"], items.map(r => [r.what, r.why])));
+  slides.push(s);
+}
+
+// Navigation
+const stage = document.getElementById("stage"), dots = document.getElementById("dots");
+slides.forEach((s, i) => {
+  stage.appendChild(s);
+  const d = el("span"); d.title = s.dataset.title; d.onclick = () => go(i); dots.appendChild(d);
+});
+let cur = 0;
+function go(i) {
+  cur = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, j) => s.classList.toggle("on", j === cur));
+  [...dots.children].forEach((d, j) => d.classList.toggle("on", j === cur));
+  document.getElementById("count").textContent = (cur + 1) + " / " + slides.length;
+  document.getElementById("prev").disabled = cur === 0;
+  document.getElementById("next").disabled = cur === slides.length - 1;
+}
+document.getElementById("prev").onclick = () => go(cur - 1);
+document.getElementById("next").onclick = () => go(cur + 1);
+addEventListener("keydown", e => {
+  if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+});
+function fit() {
+  const flow = innerWidth < 760;
+  document.body.classList.toggle("flow", flow);
+  if (flow) { slides.forEach(s => s.classList.add("on")); return; }
+  go(cur);
+  const vp = document.getElementById("viewport");
+  const k = Math.min(vp.clientWidth / 1280, vp.clientHeight / 720) * 0.96;
+  stage.style.transform = `scale(${k})`;
+}
+addEventListener("resize", fit);
+fit();
+</script>
+</body>
+</html>

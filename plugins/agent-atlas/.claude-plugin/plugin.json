@@ -1,7 +1,10 @@
 {
   "name": "agent-atlas",
   "displayName": "Agent Atlas",
-  "version": "0.2.0",
-  "description": "Map Your Month: Claude reads your last 30 days of email and calendar, read-only, and shows you where your time went, what's slipping, and five things worth taking off your plate. Optionally share a summary with Agent Atlas, only if you say yes.",
-  "author": { "name": "Agent Atlas", "url": "https://agent-atlas.co" }
+  "version": "0.3.0",
+  "description": "Map Your Month: Claude reads your last 30 days of email and calendar, read-only, and builds you a short deck: the bottom line, three quick wins, where you're the bottleneck, and five things worth taking off your plate. Optionally share a summary with Agent Atlas, only if you say yes.",
+  "author": {
+    "name": "Agent Atlas",
+    "url": "https://agent-atlas.co"
+  }
 }

@@ -1,6 +1,6 @@
 ---
 name: map-your-month
-description: Map Your Month by Agent Atlas. Scans the owner's last 30 days of email and calendar, read-only, and writes a private report showing what's due this week and what's at stake, where their time went, dropped balls with drafted replies, the work they repeat, where they are the bottleneck, five things worth taking off their plate, and draft chief-of-staff instructions. Use when the user says "map my month", "run the scan", "where does my time go", "scan my inbox", or mentions Agent Atlas.
+description: Map Your Month by Agent Atlas. Scans the owner's last 30 days of email and calendar, read-only, and builds a short private deck: the bottom line in numbers, three quick wins for this week, where time can be saved, where they are the bottleneck, five things worth taking off their plate, ready-to-paste chief-of-staff instructions, and a link to book a free results session. Use when the user says "map my month", "run the scan", "where does my time go", "scan my inbox", or mentions Agent Atlas.
 ---
 
 # Map Your Month
@@ -45,7 +45,7 @@ clearly, don't call it and don't ask again.
 ## Step 3: Read the last 30 days
 
 - **Calendar:** every event in the last 30 days, and the next 14 days. The next 14 days feed the
-  "This week" block and anything coming up that needs them.
+  quick wins, the "This week" list, and anything coming up that needs them.
 - **Email:** focus on what they personally handle. Start with: mail they sent in the last 30 days;
   inbox threads from the last 30 days; threads where someone asked them something and their reply
   is missing.
@@ -65,7 +65,7 @@ Before writing, look for **one chain** where a single stuck item causes several 
 example: an unapproved repair, then complaints, then refunds, then customers leaving; or one
 sign-off that blocks payroll, a lender report, and a partner payout. Check the business-system
 reports for numbers that back it up (a trend, a mismatch between what was reported and what the
-system shows). If you find one, it is the "biggest surprise" in section 1. If not, use the most
+system shows). If you find one, it is the "biggest surprise" on slide 1. If not, use the most
 surprising pattern instead.
 
 ## Rules, at all times
@@ -90,28 +90,43 @@ surprising pattern instead.
     isn't in the data.
 - **Choosing what to show:** when there are more items than fit, pick by consequence (money,
   deadlines, people at risk of leaving, legal or license risk), not by age.
-- The private report uses their words and their people's names. The share-safe summary uses no
+- The private deck uses their words and their people's names. The share-safe summary uses no
   names and no email content.
 
-## Step 5: Write the report
+## Step 5: Build the deck
 
-Follow `references/report-template.md` exactly: a "This week" block, then eight sections, short
-headings, tables where they help. Keep it **under 1,800 words**, not counting table borders and
-symbols, section 6, or section 8. Put the report in an artifact or document if this app
-supports one, so they can keep it, and put section 6 in its own artifact too, so it's easy to
-copy. Otherwise write it in the chat.
+Owners read a deck faster than a report. Build one, following `references/deck-guide.md` for what
+goes on each slide:
+
+1. **Bottom line:** the headline and 4 to 6 numbers.
+2. **Three quick wins** they can finish this week.
+3. **Where we can save you time:** the repeats, with hours.
+4. **Your bottlenecks.**
+5. **The next five** things off their plate.
+6. **Your chief of staff:** instructions to paste into a Claude Project, with the setup steps.
+7. **The results session:** the pitch and the booking link.
+
+Then an appendix: what's due this week, replies they could send today, and suspicious emails.
+
+Make it an HTML artifact from `references/deck-template.html`: copy the template exactly and fill
+in only the `DECK` object. If this app can't show artifacts, write the slides in the chat instead,
+as the guide describes. Keep to the guide's word limits; the slides have fixed space.
+
+After the deck, in the chat, add three short lines: slide 1 is the bottom line, slide 6 is ready to
+copy into a Claude Project today, and the appendix has the replies. Don't repeat the deck's content
+in the chat.
 
 ## Step 6: Next step: share the summary, then book
 
-After the report, explain the next step in your own words:
+After the deck, explain the next step in your own words:
 
-> "Next step: a free 30-minute results session with Agent Atlas. They come with your first win
-> already planned, turn section 6 into a working chief of staff with you, and walk through the next
-> five. To plan that first win, they need your share-safe summary (section 8) before the call."
+> "Next step: the free 30-minute results session on slide 7. Agent Atlas comes with your first win
+> already planned, sets up your chief of staff with you, and walks through the next five. To plan
+> that first win, they need your share-safe summary before the call."
 
-Then show section 8 in full, and say plainly what it contains and what it doesn't: categories,
-counts, hours, dollar amounts, deadline counts, and the next five; no names, no email addresses,
-no email content.
+Then write the share-safe summary (see the guide) and show it in full. Say plainly what it contains
+and what it doesn't: categories, counts, hours, dollar amounts, deadline counts, and the next five;
+no names, no email addresses, no email content.
 
 **If the Agent Atlas connector is available** in this conversation, offer the one-step way, once:
 
@@ -120,14 +135,14 @@ no email content.
 
 Ask which contact email to use. If it's on a different domain from the mailbox you read, confirm
 it once. Send **only** after a clear yes, by calling the connector's `submit_summary` tool with
-`summary` (section 8, exactly as shown), `contact_email`, and optionally `first_name` and
+`summary` (the share-safe summary, exactly as shown), `contact_email`, and optionally `first_name` and
 `business_type`. Nothing else: no names, no email addresses other than the contact email they
-gave, no quoted email content, nothing from the other sections. Then give them the booking link
+gave, no quoted email content, nothing else from the deck. Then give them the booking link
 (below).
 
 **If they say no, or the connector isn't available,** don't ask again. Offer the paste route: the
 booking form's summary box holds at most 1,000 characters, so write a condensed version of
-section 8 under 950 characters (this week's deadline count and money at stake, the hours, the top
+the share-safe summary under 950 characters (this week's deadline count and money at stake, the hours, the top
 repeats, the bottleneck, and the next five in a line each), show it in a code block they can copy,
 and give them the booking link.
 
